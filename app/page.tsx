@@ -1,95 +1,94 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+"use client";
+import { useDispatch, useSelector } from "react-redux";
+import sampleUsers from "./sampleUsers";
+import {
+  StyledItemBar,
+  StyledItemBarColumn,
+  StyledUser,
+  StyledItemTitle,
+  StyledWrapper,
+  StyledDeleteButton,
+  StyledAddButton,
+  StyledModalWrapper,
+  StyledEditButton,
+} from "./styles";
+import { deleteUser, selectUsers } from "./features/userSlice";
+import { useAppDispatch } from "./hooks";
+import { useState } from "react";
+import AddUser from "./components/AddUser";
+import EditUser from "./components/EditUser";
 
-export default function Home() {
+type Props = {};
+
+const Home = (props: Props) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [editStates, setEditStates] = useState<{ [userId: number]: boolean }>(
+    {}
+  );
+  const users = useSelector(selectUsers);
+  const dispatch = useAppDispatch();
+  const handleAddModal = () => {
+    setIsOpen(true);
+  };
+  const handleEditModal = (userId: number) => {
+    setEditStates((prevState) => ({
+      ...prevState,
+      [userId]: true,
+    }));
+  };
+  const handleCloseModal = () => {
+    setIsOpen(false);
+  };
+  const handleEditCloseModal = (userId:number) => {
+    setEditStates((prevState)=>({
+      ...prevState,
+      [userId]:false
+    }))
+  };
+  const handleDeleteUser = (userId: number) => {
+    dispatch(deleteUser(userId));
+  };
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+    <>
+      <StyledWrapper>
+        <StyledItemBar>
+          <StyledItemBarColumn>Name</StyledItemBarColumn>
+          <StyledItemBarColumn>ID</StyledItemBarColumn>
+          <StyledItemBarColumn>Email</StyledItemBarColumn>
+          <StyledItemBarColumn>Location</StyledItemBarColumn>
+        </StyledItemBar>
+        {users.map((user) => (
+          <StyledUser key={user.id}>
+            <StyledItemTitle>{user.name}</StyledItemTitle>
+            <StyledItemTitle>{user.id}</StyledItemTitle>
+            <StyledItemTitle>{user.email}</StyledItemTitle>
+            <StyledItemTitle>{user.location}</StyledItemTitle>
+            <StyledDeleteButton onClick={() => handleDeleteUser(user.id)}>
+              X
+            </StyledDeleteButton>
+            <StyledEditButton onClick={()=>handleEditModal(user.id)}>Edit</StyledEditButton>
+            {editStates[user.id] ? (
+              <StyledModalWrapper>
+                <EditUser
+                  key={user.id}
+                  id={user.id}
+                  onCloseModal={()=>handleEditCloseModal(user.id)}
+                ></EditUser>
+              </StyledModalWrapper>
+            ) : null}
+          </StyledUser>
+        ))}
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+        <StyledAddButton onClick={handleAddModal}>Add New User</StyledAddButton>
+        {isOpen ? (
+          <StyledModalWrapper>
+            <AddUser onCloseModal={handleCloseModal} />
+          </StyledModalWrapper>
+        ) : null}
+      </StyledWrapper>
+    </>
+  );
+};
 
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore the Next.js 13 playground.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
-}
+export default Home;
